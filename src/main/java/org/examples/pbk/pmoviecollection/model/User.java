@@ -14,6 +14,7 @@ public class User {
     private final List<MovieCollection> _movieCollections;
     /* Rep invariant:
      *    _username.length > 2
+     *    all characters in username are drawn from {A..Z, a..z, 0..9, _, -}
      *    _password.length > 5
      */
 
@@ -21,8 +22,13 @@ public class User {
      * Make a user with a known unique id and username.
      *
      * @param id
+     *          unique identifier for the user
      * @param username
+     *          unique string user identifier. Must be 3 character length at least.
+     *          Required to be a username as defined by getUsername() below.
      * @param password
+     *          string representation of user password.
+     *          Must be 6 character length at least.
      */
     public User(long id, String username, String password) {
         this._id = id;
@@ -40,6 +46,8 @@ public class User {
 
     /**
      * @return unique username of this user
+     *         Username is a nonempty sequence of letters (A-Z or
+     *         a-z), digits, underscore ("_"), or hyphen ("-").
      */
     public String getUsername() {
         return _username;
