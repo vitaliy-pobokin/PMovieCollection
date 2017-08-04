@@ -4,9 +4,7 @@ import org.examples.pbk.pmoviecollection.model.Genre;
 import org.examples.pbk.pmoviecollection.model.Movie;
 import org.examples.pbk.pmoviecollection.themoviedb.MovieResponseShort;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Vitalik on 26.07.2017.
@@ -23,7 +21,7 @@ public class MovieResponseShortToMovieConverter {
         double rating = movieResponse.getRating();
 
         // TODO: make genres conversion from genre id's
-        List<Genre> genres = new ArrayList<>();
+        Set<Genre> genres = new HashSet<>();
 
         return new Movie(id, title, description, releaseDate, rating, genres, "");
     }

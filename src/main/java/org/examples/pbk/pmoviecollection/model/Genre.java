@@ -1,9 +1,14 @@
 package org.examples.pbk.pmoviecollection.model;
 
+import javax.persistence.*;
+import java.io.Serializable;
+
 /**
  * Created by Vitalik on 26.07.2017.
  */
-public class Genre {
+@Entity
+@Table(name = "genre")
+public class Genre implements Serializable {
     private long id;
     private String name;
 
@@ -14,12 +19,23 @@ public class Genre {
         this.name = name;
     }
 
+    @Id
+    @Column(name = "id")
     public long getId() {
         return id;
     }
 
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    @Column(name = "name")
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override

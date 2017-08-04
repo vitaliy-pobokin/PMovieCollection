@@ -1,31 +1,34 @@
-package org.examples.pbk.pmoviecollection;
+package org.examples.pbk.pmoviecollection.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.*;
 
 /**
  *  This immutable datatype represents a movie.
  */
-public class Movie {
-    @JsonProperty(value = "id")
-    private final long _id;
-    private String _title;
-    private String _description;
-    private Calendar _releaseDate;
-    private double _rating;
-    private List<Genre> _genres;
-    private String _posterPath;
-    private final List<Review> _reviews;
+@Entity
+@Table(name = "movie")
+public class Movie implements Serializable {
+
+    private long id;
+    private String title;
+    private String description;
+    private Calendar releaseDate;
+    private double rating;
+    private Set<Genre> genres;
+    private String posterPath;
+    private List<Review> reviews;
     /* Rep invariant:
-     *    _title.length > 0
+     *    title.length > 0
      *    _director.length > 0
      *    all characters in _director are drawn from {A..Z, a..z, -}
-     *    _releaseDate must be after 18/03/1895
-     *    _rating [0 .. 10]
+     *    releaseDate must be after 18/03/1895
+     *    rating [0 .. 10]
      */
+
+    public Movie() {
+    }
 
     /**
      *  Make a movie with a known unique id.
@@ -42,120 +45,128 @@ public class Movie {
      * @param rating
      *          rating of the movie. Must be between 0 and 10
      */
-    public Movie(long id, String title, String description, Calendar releaseDate, double rating, List<Genre> genres, String posterPath) {
-        this._id = id;
-        this._title = title;
-        this._description = description;
-        this._releaseDate = (Calendar) releaseDate.clone();
-        this._rating = rating;
-        this._genres = new ArrayList<>(genres);
-        this._posterPath = posterPath;
-        this._reviews = new ArrayList<Review>();
+    public Movie(long id, String title, String description, Calendar releaseDate, double rating, Set<Genre> genres, String posterPath) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.releaseDate = (Calendar) releaseDate.clone();
+        this.rating = rating;
+        this.genres = new HashSet<>(genres);
+        this.posterPath = posterPath;
+        this.reviews = new ArrayList<>();
     }
 
-    /**
-     * @return unique identifier of this movie
-     */
+    public Movie(long id, String title, String description, Calendar releaseDate, double rating, Set<Genre> genres, String posterPath, List<Review> reviews) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.rating = rating;
+        this.genres = genres;
+        this.posterPath = posterPath;
+        this.reviews = reviews;
+    }
+
+    @Id
+    @Column(name = "id")
     public long getId() {
-        return _id;
+        return id;
     }
 
-    /**
-     * @return title of this movie. Non-empty string
-     */
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    @Column(name = "title", nullable = false)
     public String getTitle() {
-        return _title;
+        return title;
     }
 
-    /**
-     * @return director of this movie.
-     *         A movie director string is a nonempty sequence of letters
-     *         (A-Z or a-z), or hyphen ("-").
-     */
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-    /**
-     * @return short description of this movie
-     *         Optional. Can be empty string.
-     */
+    @Column(name = "description", nullable = false)
     public String getDescription() {
-        return _description;
+        return description;
     }
 
-    /**
-     * @return date of the first appearance movie on the screens.
-     *         Date must be after 18/03/1895.
-     */
-    public Calendar getPremiereDate() {
-        return (Calendar) _releaseDate.clone();
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    /**
-     * @return rating of this movie between 0 and 10
-     */
+    @Column(name = "release_date", nullable = false)
+    public Calendar getReleaseDate() {
+        return releaseDate;
+    }
+
+    public void setReleaseDate(Calendar releaseDate) {
+        this.releaseDate = releaseDate;
+    }
+
+    @Column(name = "rating", nullable = false)
     public double getRating() {
-        return _rating;
+        return rating;
     }
 
-    public List<Genre> getGenres() {
-        return new ArrayList<>(_genres);
+    public void setRating(double rating) {
+        this.rating = rating;
     }
 
+    @ManyToMany
+    @JoinTable(name = "movie_genre",
+        joinColumns = @JoinColumn(name = "movie_id", referencedColumnName = "id"),
+        inverseJoinColumns = @JoinColumn(name = "genre_id", referencedColumnName = "id"))
+    public Set<Genre> getGenres() {
+        return genres;
+    }
+
+    public void setGenres(Set<Genre> genres) {
+        this.genres = genres;
+    }
+
+    @Column(name = "poster_path")
     public String getPosterPath() {
-        return _posterPath;
+        return posterPath;
     }
 
+    public void setPosterPath(String posterPath) {
+        this.posterPath = posterPath;
+    }
+
+    //one to many
+    @OneToMany/*(*//*cascade = CascadeType.ALL, *//*orphanRemoval = true)
+    @JoinColumn(table = "review", name = "id")*/
+    @JoinTable(name = "movie_review",
+            joinColumns = @JoinColumn(name = "movie_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "review_id", referencedColumnName = "id"))
     public List<Review> getReviews() {
-        return new ArrayList<>(_reviews);
+        return reviews;
+    }
+
+    public void setReviews(List<Review> reviews) {
+        this.reviews = reviews;
     }
 
     public void addReview(Review review) {
-        _reviews.add(review);
+        reviews.add(review);
     }
 
-    public void set_title(String _title) {
-        this._title = _title;
-    }
 
-    public void set_description(String _description) {
-        this._description = _description;
-    }
-
-    public void set_releaseDate(Calendar _releaseDate) {
-        this._releaseDate = _releaseDate;
-    }
-
-    public void set_rating(double _rating) {
-        this._rating = _rating;
-    }
-
-    public void set_genres(List<Genre> _genres) {
-        this._genres = _genres;
-    }
-
-    public void set_posterPath(String _posterPath) {
-        this._posterPath = _posterPath;
-    }
-
-    /**
-     * @see Object.toString()
-     */
     @Override
     public String toString() {
         return "Movie{" +
-                "_id=" + _id +
-                ", _title='" + _title + '\'' +
-                ", _description='" + _description + '\'' +
-                ", _releaseDate=" + _releaseDate +
-                ", _rating=" + _rating +
-                ", _genres=" + _genres +
-                ", _posterPath='" + _posterPath + '\'' +
-                ", _reviews=" + _reviews +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", releaseDate=" + releaseDate +
+                ", rating=" + rating +
+                ", genres=" + genres +
+                ", posterPath='" + posterPath + '\'' +
+                ", reviews=" + reviews +
                 '}';
     }
 
-    /**
-     * @see Object.equals()
-     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -163,15 +174,12 @@ public class Movie {
 
         Movie movie = (Movie) o;
 
-        return _id == movie._id;
+        return id == movie.id;
     }
 
-    /**
-     * @see Object.hashCode()
-     */
     @Override
     public int hashCode() {
-        return (int) (_id ^ (_id >>> 32));
+        return (int) (id ^ (id >>> 32));
     }
 
 }

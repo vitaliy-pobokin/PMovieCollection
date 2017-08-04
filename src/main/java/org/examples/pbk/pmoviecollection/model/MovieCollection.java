@@ -1,5 +1,11 @@
-package org.examples.pbk.pmoviecollection;
+package org.examples.pbk.pmoviecollection.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,59 +14,92 @@ import java.util.List;
  *  held by some person.
  *  Or collection of the movies that some person wants to watch.
  */
-public class MovieCollection {
+@Entity
+@Table (name = "moviecollection")
+public class MovieCollection implements Serializable {
 
-    private final long _id;
-    private final List<Movie> _collection;
-    /* Rep invariant:
-     *    _collection.length > 0
-     */
+    private long id;
+    private String collectionName;
+    private List<Movie> collection;
 
-    /**
-     *  Make a movie collection with a known unique id.
-     *
-     * @param id
-     *          unique identifier for the movie collection
-     * @param movies
-     *          list of movies to be stored in the collection.
-     *          Must contain one element at least.
-     */
-    public MovieCollection(long id, List<Movie> movies) {
-        this._id = id;
-        this._collection = new ArrayList<Movie>();
-        _collection.addAll(movies);
+    private User user;
+
+    public MovieCollection() {
+    }
+
+    public MovieCollection(String collectionName, List<Movie> movies, User user) {
+        this.collectionName = collectionName;
+        this.collection = movies;
+        this.user = user;
+    }
+
+    public MovieCollection(long id, String collectionName, List<Movie> movies, User user) {
+        this.id = id;
+        this.collectionName = collectionName;
+        this.collection = movies;
+        this.user = user;
     }
 
     /**
      * @return unique identifier of this collection
      */
+    @Id
+    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @Column (name = "id")
     public long getId() {
-        return _id;
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    @Column (name = "collection_name")
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
     }
 
     /**
      * @return list of movies storing in this collection.
      */
+    @OneToMany
+    @JoinTable(name = "moviecollection_movie",
+            joinColumns = @JoinColumn(name = "collection_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "movie_id", referencedColumnName = "id"))
     public List<Movie> getCollection() {
-        List<Movie> movies = new ArrayList<Movie>();
-        movies.addAll(_collection);
-        return movies;
+        return collection;
     }
 
-    /**
-     * @see Object.toString()
-     */
+    public void setCollection(List<Movie> collection) {
+        this.collection = collection;
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JsonBackReference
+    //@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property = "id")
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+
     @Override
     public String toString() {
         return "MovieCollection{" +
-                "_id=" + _id +
-                ", _collection=" + _collection +
+                "id=" + id +
+                ", collectionName='" + collectionName + '\'' +
+                ", collection=" + collection +
                 '}';
     }
 
-    /**
-     * @see Object.equals()
-     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -68,14 +107,11 @@ public class MovieCollection {
 
         MovieCollection that = (MovieCollection) o;
 
-        return _id == that._id;
+        return id == that.id;
     }
 
-    /**
-     * @see Object.hashCode()
-     */
     @Override
     public int hashCode() {
-        return (int) (_id ^ (_id >>> 32));
+        return (int) (id ^ (id >>> 32));
     }
 }

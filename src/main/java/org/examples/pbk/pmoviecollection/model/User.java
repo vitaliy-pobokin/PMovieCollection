@@ -1,22 +1,38 @@
-package org.examples.pbk.pmoviecollection;
+package org.examples.pbk.pmoviecollection.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  *  User represents some person identified by unique id or unique username.
  */
-public class User {
+@Entity
+@Table(name = "user")
+public class User implements Serializable {
 
-    private final long _id;
-    private final String _username;
-    private final String _password;
-    private final List<MovieCollection> _movieCollections;
+    private long id;
+    private String username;
+    private String password;
+    private List<MovieCollection> movieCollections;
     /* Rep invariant:
-     *    _username.length > 2
+     *    username.length > 2
      *    all characters in username are drawn from {A..Z, a..z, 0..9, _, -}
-     *    _password.length > 5
+     *    password.length > 5
      */
+
+    public User() {
+
+    }
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+        this.movieCollections = new ArrayList<MovieCollection>();
+    }
 
     /**
      * Make a user with a known unique id and username.
@@ -31,17 +47,31 @@ public class User {
      *          Must be 6 character length at least.
      */
     public User(long id, String username, String password) {
-        this._id = id;
-        this._username = username;
-        this._password = password;
-        this._movieCollections = new ArrayList<MovieCollection>();
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.movieCollections = new ArrayList<MovieCollection>();
+    }
+
+    public User(long id, String username, String password, List<MovieCollection> movieCollections) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.movieCollections = movieCollections;
     }
 
     /**
      * @return unique identifier of this user
      */
+    @Id
+    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     public long getId() {
-        return _id;
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     /**
@@ -49,17 +79,35 @@ public class User {
      *         Username is a nonempty sequence of letters (A-Z or
      *         a-z), digits, underscore ("_"), or hyphen ("-").
      */
+    @Column(name = "username", nullable = false)
     public String getUsername() {
-        return _username;
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    @Column (name = "password", nullable = false)
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     /**
      * @return list of MovieCollections of this user
      */
+    @OneToMany (mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference
     public List<MovieCollection> getMovieCollections() {
-        List<MovieCollection> collectionList = new ArrayList<MovieCollection>();
-        collectionList.addAll(_movieCollections);
-        return collectionList;
+        return movieCollections;
+    }
+
+    public void setMovieCollections(List<MovieCollection> movieCollections) {
+        this.movieCollections = movieCollections;
     }
 
     /**
@@ -69,7 +117,7 @@ public class User {
      */
     public void addMovieCollection(MovieCollection movieCollection) {
         if (movieCollection == null) return;
-        _movieCollections.add(movieCollection);
+        movieCollections.add(movieCollection);
     }
 
     /**
@@ -78,9 +126,9 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "_id=" + _id +
-                ", _username='" + _username + '\'' +
-                ", _movieCollections=" + _movieCollections +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", movieCollections=" + movieCollections +
                 '}';
     }
 
@@ -94,7 +142,7 @@ public class User {
 
         User user = (User) o;
 
-        return _id == user._id;
+        return id == user.id;
     }
 
     /**
@@ -102,6 +150,6 @@ public class User {
      */
     @Override
     public int hashCode() {
-        return (int) (_id ^ (_id >>> 32));
+        return (int) (id ^ (id >>> 32));
     }
 }

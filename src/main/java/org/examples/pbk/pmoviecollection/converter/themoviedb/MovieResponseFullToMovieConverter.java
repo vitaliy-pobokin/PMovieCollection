@@ -6,6 +6,7 @@ import org.examples.pbk.pmoviecollection.themoviedb.MovieResponseFull;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Vitalik on 26.07.2017.
@@ -17,11 +18,25 @@ public class MovieResponseFullToMovieConverter {
         String description = movieResponse.getDescription();
 
         // TODO: make date conversion
-        Calendar releaseDate = Calendar.getInstance();
+        Calendar releaseDate = parseDate(movieResponse.getReleaseDate());
 
         double rating = movieResponse.getRating();
-        List<Genre> genres = movieResponse.getGenres();
+        Set<Genre> genres = movieResponse.getGenres();
 
         return new Movie(id, title, description, releaseDate, rating, genres, "");
+    }
+
+    private static Calendar parseDate(String date) {
+        String[] data = date.split("-");
+        int year = Integer.parseInt(data[0]);
+        int month = Integer.parseInt(data[1]);
+        int day = Integer.parseInt(data[2]);
+
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.MONTH, month - 1);
+        cal.set(Calendar.DAY_OF_MONTH, day);
+
+        return cal;
     }
 }
